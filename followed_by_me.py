@@ -6,9 +6,8 @@ from tqdm import trange
 
 agent = WebAgentAccount(config.username)
 agent.auth(config.password)
-time.sleep(2)
 
-pages = ['g.r.u.p.p.i.r.o.v.k.a']
+pages = ['p.i.n.k.m.a.n']
 
 
 # pages = ['koreann_ua',
@@ -29,7 +28,8 @@ for page in pages:
     followers = []
     while stop is None:
         try:
-            medias, pointer = agent.get_followers(Account(page), pointer)
+            # medias, pointer = agent.get_followers(Account(page), pointer)
+            medias, pointer = agent.get_follows(Account(page), pointer)
             # time.sleep(3)
             followers += medias
             print(len(followers), pointer)

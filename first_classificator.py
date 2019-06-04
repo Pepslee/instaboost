@@ -2,7 +2,7 @@ import pandas as pd
 import math
 import numpy as np
 
-path = 'g.r.u.p.p.i.r.o.v.k.a.2.0_followed_stats'
+path = 'g.r.u.p.p.i.r.o.v.k.a.2.0_followed_stats_home'
 
 df = pd.read_csv(path)
 
