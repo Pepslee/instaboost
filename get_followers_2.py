@@ -4,6 +4,7 @@ from instagram import Account
 import time
 from tqdm import trange
 
+import pandas as pd
 agent = WebAgentAccount(config.username)
 agent.auth(config.password)
 time.sleep(2)
@@ -33,6 +34,9 @@ for page in pages:
             # time.sleep(3)
             followers += medias
             print(len(followers), pointer)
+            for fol in medias:
+                followers_df = pd.DataFrame([[fol]])
+                followers_df.to_csv(page, encoding='utf-8', mode='a', index=False, header=False)
             if pointer is None:
                 stop = 1
         except:
@@ -40,6 +44,4 @@ for page in pages:
                 time.sleep(1)
             continue
 
-    with open(page, 'w') as file:
-        for follower in followers:
-            file.write('%s\n' % follower)
+

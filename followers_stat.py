@@ -68,7 +68,7 @@ def get_media_id(media_url):
 
 
 def main():
-    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a.2.0'
+    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a'
     target_followers_list_path = os.path.join('/home/serg/PycharmProjects/instaboost/pinkman/', target_account_nick_name)
     day = datetime.datetime.now().day
     month = datetime.datetime.now().month

@@ -20,7 +20,7 @@ EPS = 0.0001
 
 URL = 'https://www.instagram.com/'
 
-LIMIT = 500
+LIMIT = 1000
 TIMER = 60
 
 CRED = '\033[91m'
@@ -109,7 +109,6 @@ def main():
                 user_id = user['id']
 
                 target_account = Account(target_follower_name)
-                time.sleep(1)
                 print('try to get media')
                 med = None
                 while med is None:
