@@ -8,6 +8,7 @@ import pandas as pd
 from collections import OrderedDict
 
 import config
+from joblib import dump, load
 
 
 from instagram import WebAgentAccount, Media
@@ -43,6 +44,10 @@ def get_media_id(media_url):
 
 
 def main():
+    # load sklearn model
+    model_path = 'pinkman/filename_131.joblib'
+    model = load(model_path)
+
     target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a.2.0'
     target_followers_list_path = os.path.join('/home/serg/PycharmProjects/instaboost/', target_account_nick_name)
     save_file = os.path.join('/home/serg/PycharmProjects/instaboost/', target_account_nick_name + '_followed_stats_merged')
@@ -68,12 +73,38 @@ def main():
         black_list = black_list['name']
 
     t = datetime.datetime.now().hour
-    agent = WebAgentAccount(config.username)
-    agent.auth(config.password)
+    cookies = {'sessionid': '13503104221%3AQ5kmSUAFXvHBJB%3A11'}
+    agent = WebAgentAccount(config.username, cookies=cookies)
+    # agent.auth(config.password)
     sess = agent.session
     time.sleep(3)
 
     followers = list(set(followers) - set(followed_names) - set(black_list))
+
+    stats_path = 'g.r.u.p.p.i.r.o.v.k.a.2.0_stats_6_2'
+    stat_df = pd.read_csv(stats_path)
+    mask = stat_df['name'].isin(followers)
+    stat_df = stat_df[mask].copy()
+    stat_df['fb_factor'] = stat_df['follow'] / (stat_df['followers'] + 1)
+    feature_names = ['id', 'followers', 'follow', 'fb_factor', 'posts']
+    target_names = stat_df['name']
+    X = stat_df[feature_names]
+
+    p = -0.19 * np.log10(X[['followers']].values + EPS) + 0.42 * np.log10(X[['follow']].values + EPS) - 0.18 * np.log10(X[['posts']].values + EPS)
+
+    ind = (p[:, 0] > 0.4) * (X[['posts']].values[:, 0] > 2)
+    # ind = model.predict_proba(X[['id', 'followers', 'follow', 'fb_factor', 'posts']].values)[:, 1] > 0.3
+
+    followers = target_names[ind].values
+
+
+
+
+
+
+
+
+
     length = len(followers)
     j = 0
     start_time = time.time()
@@ -82,84 +113,95 @@ def main():
         if j >= length or j >= LIMIT:
             break
         target_follower_name = followers[i]
-        target_url = os.path.join(URL, target_follower_name, '?__a=1')
-        res = None
-        while res is None:
+        # target_url = os.path.join(URL, target_follower_name, '?__a=1')
+        # res = None
+        # while res is None:
+        #     try:
+        #         res = sess.get(target_url)
+        #     except:
+        #         for s in trange(10):
+        #             time.sleep(1)
+        #         continue
+        # if res.status_code == 200 and res.text != '{}':
+        #     target_dict = json.loads(res.content)
+        #     user = target_dict['graphql']['user']
+        #     followed_by_me = user['followed_by_viewer']
+        #     is_private = user['is_private']
+        #     count_followers = user['edge_followed_by']['count']
+        #     count_follow = user['edge_follow']['count']
+        #     count_post = user['edge_owner_to_timeline_media']['count']
+        # prob = -0.19 * np.log10(count_followers + EPS) + 0.42 * np.log10(count_follow + EPS) - 0.18 * np.log10(count_post + EPS)
+        # ['id', 'followers', 'follow', 'fb_factor', 'posts']
+        # prob = model.predict_proba(np.array([user['id'], count_followers, count_follow, count_follow/float(count_followers+1), count_post]).reshape(1, -1))[0][1]
+        # prob1 = -0.19 * np.log10(count_followers + EPS) + 0.42 * np.log10(count_follow + EPS) - 0.18 * np.log10(count_post + EPS)
+        # if followed_by_me:
+        #     user_id = user['id']
+        #     targets_frame = pd.DataFrame([[target_follower_name, user_id, count_followers, count_follow, count_post, 1, t]])
+        #     targets_frame.to_csv(save_file, encoding='utf-8', mode='a', index=False, header=False)
+        #     continue
+        # if not followed_by_me and not is_private and prob > 0.5:
+        #     user_id = user['id']
+
+        target_account = Account(target_follower_name)
+        print('try to get media')
+        med = None
+        start_time = time.time()
+        while med is None:
             try:
-                res = sess.get(target_url)
+                med = agent.get_media(target_account)
+
             except:
                 for s in trange(10):
                     time.sleep(1)
+                current_time = time.time()
+                if current_time - start_time > 60:
+                    med = 17
                 continue
-        if res.status_code == 200 and res.text != '{}':
-            target_dict = json.loads(res.content)
-            user = target_dict['graphql']['user']
-            followed_by_me = user['followed_by_viewer']
-            is_private = user['is_private']
-            count_followers = user['edge_followed_by']['count']
-            count_follow = user['edge_follow']['count']
-            count_post = user['edge_owner_to_timeline_media']['count']
-            prob = -0.19 * np.log10(count_followers + EPS) + 0.42 * np.log10(count_follow + EPS) - 0.18 * np.log10(count_post + EPS)
-            if followed_by_me:
-                user_id = user['id']
-                targets_frame = pd.DataFrame([[target_follower_name, user_id, count_followers, count_follow, count_post, 1, t]])
-                targets_frame.to_csv(save_file, encoding='utf-8', mode='a', index=False, header=False)
-                continue
-            if not followed_by_me and not is_private and prob > 0.5:
-                user_id = user['id']
+        if med == 17:
+            continue
 
-                target_account = Account(target_follower_name)
-                print('try to get media')
-                med = None
-                while med is None:
+
+        if med[0]:
+            time.sleep(TIMER)
+            post_time = datetime.datetime.fromtimestamp(med[0][0].date)
+            current_time = datetime.datetime.now()
+            dif = (current_time - post_time).days
+            if dif < 500:
+                j += 1
+                print('try to like')
+                time.sleep(1)
+                lik = None
+                while lik is None:
                     try:
-                        med = agent.get_media(target_account)
+                        lik = agent.like(med[0][0])
                     except:
                         for s in trange(10):
                             time.sleep(1)
                         continue
-
-                if med[0]:
-                    post_time = datetime.datetime.fromtimestamp(med[0][0].date)
-                    current_time = datetime.datetime.now()
-                    dif = (current_time - post_time).days
-                    if dif < 5:
-                        j += 1
-                        print('try to like')
-                        time.sleep(1)
-                        lik = None
-                        while lik is None:
-                            try:
-                                lik = agent.like(med[0][0])
-                            except:
-                                for s in trange(10):
-                                    time.sleep(1)
-                                continue
-                        time_dif = start_time - time.time()
-                        if time_dif < TIMER:
-                            time.sleep(int(TIMER - time_dif))
-                        print('try to follow')
-                        fol = None
-                        while fol is None:
-                            try:
-                                fol = agent.follow(target_account)
-                            except:
-                                for s in trange(10):
-                                    time.sleep(1)
-                                continue
-                        # wr.writerow([target_follower_name, user_id, count_followers, count_follow, count_post, like, t])
-                        targets_frame = pd.DataFrame([[target_follower_name, user_id, count_followers, count_follow, count_post, 1, t]])
-                        targets_frame.to_csv(save_file, encoding='utf-8', mode='a', index=False, header=False)
-                        print(target_follower_name, '                                       ', CRED + str(j) + CEND)
-                        start_time = time.time()
-                    else:
-                        print(target_follower_name, ' too old post = ', dif)
-                        black_list_frame = pd.DataFrame([[target_follower_name]])
-                        black_list_frame.to_csv(black_file, encoding='utf-8', mode='a', index=False, header=False)
-                else:
-                    print('no media')
-                    black_list_frame = pd.DataFrame([[target_follower_name]])
-                    black_list_frame.to_csv(black_file, encoding='utf-8', mode='a', index=False, header=False)
+                # time_dif = start_time - time.time()
+                time.sleep(int(TIMER))
+                print('try to follow')
+                fol = None
+                while fol is None:
+                    try:
+                        fol = agent.follow(target_account)
+                    except:
+                        for s in trange(10):
+                            time.sleep(1)
+                        continue
+                # wr.writerow([target_follower_name, user_id, count_followers, count_follow, count_post, like, t])
+                # targets_frame = pd.DataFrame([[target_follower_name, user_id, count_followers, count_follow, count_post, 1, t]])
+                # targets_frame.to_csv(save_file, encoding='utf-8', mode='a', index=False, header=False)
+                print(target_follower_name, '                                       ', CRED + str(j) + CEND)
+                start_time = time.time()
+            else:
+                print(target_follower_name, ' too old post = ', dif)
+                black_list_frame = pd.DataFrame([[target_follower_name]])
+                black_list_frame.to_csv(black_file, encoding='utf-8', mode='a', index=False, header=False)
+                # else:
+                #     print('no media')
+                #     black_list_frame = pd.DataFrame([[target_follower_name]])
+                #     black_list_frame.to_csv(black_file, encoding='utf-8', mode='a', index=False, header=False)
 
 
 if __name__ == "__main__":
