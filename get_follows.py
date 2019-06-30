@@ -8,15 +8,16 @@ from tqdm import trange
 
 import pandas as pd
 
-cookies = {'sessionid': '13503104221%3AQ5kmSUAFXvHBJB%3A11'}
-agent = WebAgentAccount(config.username, cookies=cookies)
-# agent.auth(config.password)
+# cookies = {'sessionid': '13503104221%3AQ5kmSUAFXvHBJB%3A11'}
+agent = WebAgentAccount(config.username)
+agent.auth(config.password)
 time.sleep(2)
 
-pages = ['p.i.n.k.m.a.n']
+user_name = config.username
+pages = [user_name]
 
 
-mode = 'followers'
+mode = 'follows'
 
 
 # pages = ['koreann_ua',
@@ -49,7 +50,7 @@ for page in pages:
             print(len(followers), pointer)
             for fol in medias:
                 followers_df = pd.DataFrame([[fol]])
-                followers_df.to_csv(os.path.join('pinkman', page + '_' + mode), encoding='utf-8', mode='a', index=False, header=False)
+                followers_df.to_csv(os.path.join(user_name, page + '_' + mode), encoding='utf-8', mode='a', index=False, header=False)
             if pointer is None:
                 stop = 1
         except:

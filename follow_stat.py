@@ -41,8 +41,8 @@ def get_media_id(media_url):
 
 def main():
     target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a.2.0'
-    target_followers_list_path = os.path.join('/home/serg/PycharmProjects/instaboost/pinkman/', target_account_nick_name)
-    save_file = os.path.join('/home/serg/PycharmProjects/instaboost/pinkman/', target_account_nick_name + '_stats')
+    target_followers_list_path = os.path.join('/home/serg/PycharmProjects/instaboost/p.i.n.k.m.a.n/', target_account_nick_name)
+    save_file = os.path.join('/home/serg/PycharmProjects/instaboost/p.i.n.k.m.a.n/', target_account_nick_name + '_stats')
 
     f = open(target_followers_list_path, "r")
     followers = f.read().split('\n')[:-1]

@@ -46,8 +46,8 @@ linearly_separable = (X, y)
 
 
 page = 'p.i.n.k.m.a.n'
-forward_path = os.path.join('pinkman', page + '_follows')
-backward_path = os.path.join('pinkman', page + '_followers')
+forward_path = os.path.join('p.i.n.k.m.a.n', page + '_follows')
+backward_path = os.path.join('p.i.n.k.m.a.n', page + '_followers')
 
 
 forward_df = pd.read_csv(forward_path)

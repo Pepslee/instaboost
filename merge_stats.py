@@ -13,5 +13,5 @@ for index, row in home.iterrows():
         new_df = new_df.append(row, ignore_index=True)
 
 new_df = new_df.append(work, sort=False, ignore_index=True)
-new_df.to_csv('g.r.u.p.p.i.r.o.v.k.a.2.0_followed_stats_merged', index=False)
+new_df.to_csv('followed_stats', index=False)
 

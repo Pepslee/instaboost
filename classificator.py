@@ -47,8 +47,8 @@ def IoU(y, x, thresh=0):
 
 
 page = 'p.i.n.k.m.a.n'
-forward_path = os.path.join('pinkman', page + '_follows')
-backward_path = os.path.join('pinkman', page + '_followers')
+forward_path = os.path.join('p.i.n.k.m.a.n', page + '_follows')
+backward_path = os.path.join('p.i.n.k.m.a.n', page + '_followers')
 
 
 params = {'iterations': None,
@@ -67,7 +67,7 @@ model = DecisionTreeClassifier(criterion='entropy', max_depth=20, random_state=0
 # tree = SVC(class_weight={0: 0.1, 1: 0.9})
 # ada = AdaBoostClassifier(base_estimator=tree, n_estimators=500, learning_rate=0.01, random_state=0)
 
-# forward_path = 'pinkman/forward_dp'
+# forward_path = 'p.i.n.k.m.a.n/forward_dp'
 # backward_path = '/home/panchenko/PycharmProjects/classificators/train_data/backward_dp'
 
 select = SelectKBest(chi2, k=50)
@@ -165,7 +165,7 @@ for i, model in enumerate(classifiers):
     print('  ')
     print('Classificator № ' + str(i))
     print(mean_precision)
-    dump(model, os.path.join('pinkman', 'filename_' + str(i) + '.joblib'))
+    dump(model, os.path.join('p.i.n.k.m.a.n', 'filename_' + str(i) + '.joblib'))
 
 # tree = ada.fit(X_train, Y_train)
 #
