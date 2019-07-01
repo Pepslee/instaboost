@@ -10,8 +10,6 @@ from collections import OrderedDict
 from pandas.errors import EmptyDataError
 
 import config
-from joblib import dump, load
-
 
 from instagram import WebAgentAccount, Media
 import config
@@ -255,7 +253,7 @@ def targets_filter(statistic_frame, target_list, model):
 
 def main():
     follows_limit = 500
-    target_account_nick_name = 'kosmetichka_com.ua'
+    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a.2.0'
     user_name, pass_word, cookies = config.username, config.password, config.cookies
 
     statistic_frame_path = os.path.abspath(os.path.join(user_name, 'target_account_nick_name'))
