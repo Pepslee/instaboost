@@ -3,6 +3,7 @@
 *~
 database/
 .venv*
+venv*
 *.egg-info/
 .eggs/
 config.py
