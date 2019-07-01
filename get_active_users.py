@@ -16,16 +16,23 @@ def login():
         agent.auth(config.password)
     return agent
 
+# TODO: add ping proxies
+
+# TODO: add sessionID loading
+# https://www.quora.com/How-do-I-save-a-Python-request-session
+
 
 def main():
     count = 12
-    target_account_nick_name = 'kosmetichka_com.ua'
-    save_path = os.path.abspath(os.path.join(config.username, target_account_nick_name))
+    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a'
+    settings = config.settings
+    data_base_path = config.data_base_path
+    save_path = os.path.abspath(os.path.join(data_base_path, config.username, target_account_nick_name + '_active'))
 
     agent = login()
 
     target_account = Account(target_account_nick_name)
-    agent.update(target_account)
+    agent.update(target_account, settings)
     print('Media count = ' + str(target_account.media_count))
 
     media_pointer = None
@@ -34,7 +41,7 @@ def main():
     users = list()
     while media_stop:
         try:
-            medias, media_pointer = agent.get_media(target_account, media_pointer, count=count, limit=count)
+            medias, media_pointer = agent.get_media(target_account, media_pointer, count=count, limit=count, settings=settings)
         except:
             for i in trange(60):
                 time.sleep(1)
@@ -46,7 +53,7 @@ def main():
             like_stop = True
             while like_stop:
                 try:
-                    likes, like_pointer = agent.get_likes(media, like_pointer)
+                    likes, like_pointer = agent.get_likes(media, like_pointer, settings=settings)
                 except:
                     for i in trange(60):
                         time.sleep(1)
@@ -57,7 +64,7 @@ def main():
                     users.append(like.username)
             media_counter += 1
             print(media_counter, ' from ', target_account.media_count)
-    followers_df = pd.DataFrame([list(set(users))])
+    followers_df = pd.DataFrame(pd.Series(users))
     followers_df.to_csv(save_path, encoding='utf-8', mode='a', index=False, header=False)
 
 
