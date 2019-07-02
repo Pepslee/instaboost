@@ -29,7 +29,7 @@ mode = 'follows'
 #          '_just__enjoy_',
 #          'glanc.ua',
 #          'kiev_beauty_bar']
-
+data_base_path = config.data_base_path
 
 for page in pages:
     pointer = None
@@ -50,7 +50,7 @@ for page in pages:
             print(len(followers), pointer)
             for fol in medias:
                 followers_df = pd.DataFrame([[fol]])
-                followers_df.to_csv(os.path.join(user_name, page + '_' + mode), encoding='utf-8', mode='a', index=False, header=False)
+                followers_df.to_csv(os.path.join(data_base_path, user_name, page + '_' + mode), encoding='utf-8', mode='a', index=False, header=False)
             if pointer is None:
                 stop = 1
         except:

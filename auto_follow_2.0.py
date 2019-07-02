@@ -257,14 +257,14 @@ def targets_filter(statistic_frame, target_list, model):
 
 def main():
     follows_limit = 500
-    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a.2.0'
+    target_account_nick_name = 'kosmetichka_com.ua'
+    data_base_path = config.data_base_path
     user_name, pass_word, cookies = config.username, config.password, config.cookies
-
-    statistic_frame_path = os.path.abspath(os.path.join(user_name, 'target_account_nick_name'))
+    statistic_frame_path = os.path.abspath(os.path.join(data_base_path, user_name, 'target_account_nick_name'))
     statistic_frame_path = None
-    target_list_path = os.path.abspath(os.path.join(user_name, target_account_nick_name))
-    black_list_path = os.path.abspath(os.path.join(user_name, 'black_list'))
-    followed_list_path = os.path.abspath(os.path.join(user_name, user_name + '_follows'))
+    target_list_path = os.path.abspath(os.path.join(data_base_path, user_name, target_account_nick_name))
+    black_list_path = os.path.abspath(os.path.join(data_base_path, user_name, 'black_list'))
+    followed_list_path = os.path.abspath(os.path.join(data_base_path, user_name, user_name + '_follows'))
 
     if statistic_frame_path is None:
         target_list, followed_list = get_target_list(target_list_path, black_list_path, followed_list_path)
