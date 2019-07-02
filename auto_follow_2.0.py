@@ -208,11 +208,15 @@ def get_target_list(target_list_path, black_list_path, followed_list_path):
         black_list = list(pd.read_csv(black_list_path, header=None)[0])
     except EmptyDataError:
         black_list = list()
+    except FileNotFoundError:
+        black_list = list()
 
     try:
         followed_list = list(pd.read_csv(followed_list_path, header=None)[0])
     except EmptyDataError:
         followed_list = list()
+    except FileNotFoundError:
+        black_list = list()
 
     target_list = list(set(target_list) - set(followed_list) - set(black_list))
     return target_list, followed_list
