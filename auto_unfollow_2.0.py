@@ -22,7 +22,7 @@ EPS = 0.0001
 URL = 'https://www.instagram.com/'
 
 LIMIT = 5000
-TIMER = 80
+TIMER = 170
 
 CRED = '\033[91m'
 CEND = '\033[0m'
@@ -70,6 +70,7 @@ def unfollow(agent, followed_list_path, followed_list):
                     else:
                         continue
             if unfol == 17:
+                followed_list.remove(followed_list[0])
                 continue
 
             j += 1
@@ -142,7 +143,7 @@ def main():
     agent = WebAgentAccount(user_name, cookies=cookies)
     if cookies is None:
         agent.auth(config.password)
-    unfollow(agent, followed_list)
+    unfollow(agent, followed_list_path, followed_list)
 
 
 if __name__ == "__main__":
