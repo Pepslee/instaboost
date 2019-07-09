@@ -50,97 +50,57 @@ proxy = [{'https': '127.0.0.1:80'},
 
 p_len = len(proxy)
 
-
-def media_id_to_code(media_id):
-    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
-    short_code = ''
-    while media_id > 0:
-        remainder = media_id % 64
-        media_id = (media_id-remainder)/64
-        short_code = alphabet[remainder] + short_code
-    return short_code
-
-
-def get_media_id(media_url):
-    url = 'https://api.instagram.com/oembed/?callback=&url=' + media_url
-    response = requests.get(url).json()
-    return response['media_id']
-
-
 def main():
-    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a'
-    target_followers_list_path = os.path.join('/home/serg/PycharmProjects/instaboost/p.i.n.k.m.a.n/', target_account_nick_name)
-    day = datetime.datetime.now().day
-    month = datetime.datetime.now().month
-    save_file = os.path.join('/home/serg/PycharmProjects/instaboost/', target_account_nick_name + '_stats_' + str(month) + '_' + str(day))
-
-    if not os.path.exists(save_file):
-        targets_frame = pd.DataFrame([['name', 'id', 'followers', 'follow', 'posts', 'like']])
-        targets_frame.to_csv(save_file, encoding='utf-8', mode='w', index=False, header=False)
-        followed_names = []
-    else:
-        already_followed = pd.read_csv(save_file)
-        followed_names = list(already_followed['name'])
+    data_base_path = config.data_base_path
+    path = os.path.join(data_base_path, 'p.i.n.k.m.a.n/g.r.u.p.p.i.r.o.v.k.a.2.0_active_filtered')
+    save_file = os.path.join(data_base_path, 'p.i.n.k.m.a.n/g.r.u.p.p.i.r.o.v.k.a.2.0_active_filtered_stats')
+    followers = pd.read_csv(path, header=None)[0]
 
     sess = requests.Session()
-    # res = sess.get("https://www.instagram.com/accounts/login/",
-    #                data={'username': config.username, 'password': config.password},
-    #                allow_redirects=True)
 
+    length = len(followers)
+    j = 0
+    pp = 0
+    for i in trange(length):
+        if j >= length or j >= LIMIT:
+            break
+        target_follower_name = followers[i]
+        target_url = os.path.join(URL, target_follower_name, '?__a=1')
+        res = None
 
-    if 200 == 200:
-        f = open(target_followers_list_path, "r")
-        followers = f.read().split('\n')[:-1]
-
-        # if not os.path.exists(save_file):
-        #     targets_frame = pd.DataFrame(columns=['name', 'id', 'followers', 'follow', 'posts', 'like'])
-        #     targets_frame.to_csv(save_file, encoding='utf-8', index=False)
-
-
-
-        length = len(followers)
-        j = 0
-        pp = 0
-        for i in trange(length):
-            if j >= length or j >= LIMIT:
-                break
-            target_follower_name = followers[i]
-            target_url = os.path.join(URL, target_follower_name, '?__a=1')
-            res = None
-
-            while res is None:
-                settings = proxy[pp % p_len]
-                try:
-                    res = sess.get(target_url, proxies=settings, timeout=2)
-                    if res.status_code == 429:
-                        res = None
-                        pp += 1
-                        continue
-                except:
+        while res is None:
+            settings = proxy[pp % p_len]
+            try:
+                res = sess.get(target_url, proxies=settings, timeout=2)
+                print(settings)
+                if res.status_code == 429:
+                    res = None
                     pp += 1
                     continue
-            if res.status_code == 200:
-                target_dict = json.loads(res.content)
-                user = target_dict['graphql']['user']
-                j += 1
-                user_id = user['id']
-                is_private = user['is_private']
-                count_followers = user['edge_followed_by']['count']
-                count_follow = user['edge_follow']['count']
-                count_post = user['edge_owner_to_timeline_media']['count']
-                like = 0
-                if not is_private:
-                    if count_post > 0:
-                        post_list = user['edge_owner_to_timeline_media']['edges']
-                        if len(post_list) > 0:
-                            post_data = post_list[0]['node']['taken_at_timestamp']
-                            post_time = datetime.datetime.fromtimestamp(post_data)
-                            current_time = datetime.datetime.now()
-                            dif = (current_time - post_time).days
-                            if dif < 5:
-                                # wr.writerow([target_follower_name, user_id, count_followers, count_follow, count_post, like])
-                                targets_frame = pd.DataFrame([[target_follower_name, user_id, count_followers, count_follow, count_post, like]])
-                                targets_frame.to_csv(save_file, encoding='utf-8', mode='a', index=False, header=False)
+            except:
+                pp += 1
+                continue
+        if res.status_code == 200:
+            target_dict = json.loads(res.content)
+            user = target_dict['graphql']['user']
+            j += 1
+            user_id = user['id']
+            is_private = user['is_private']
+            count_followers = user['edge_followed_by']['count']
+            count_follow = user['edge_follow']['count']
+            count_post = user['edge_owner_to_timeline_media']['count']
+            like = 0
+            if not is_private:
+                if count_post > 0:
+                    post_list = user['edge_owner_to_timeline_media']['edges']
+                    if len(post_list) > 0:
+                        post_data = post_list[0]['node']['taken_at_timestamp']
+                        post_time = datetime.datetime.fromtimestamp(post_data)
+                        current_time = datetime.datetime.now()
+                        dif = (current_time - post_time).days
+                        if dif < 5:
+                            targets_frame = pd.DataFrame([[target_follower_name, user_id, count_followers, count_follow, count_post, like]])
+                            targets_frame.to_csv(save_file, encoding='utf-8', mode='a', index=False, header=False)
 
 
 if __name__ == "__main__":

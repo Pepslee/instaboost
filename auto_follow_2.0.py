@@ -44,7 +44,7 @@ def get_media_id(media_url):
     return response['media_id']
 
 
-def follow(agent, target_list, follows_limit, statistic_frame_path, black_list_path, followed_list_path, followed_list):
+def follow(agent, target_list, follows_limit):
     sess = agent.session
     j = 0
 
@@ -120,58 +120,36 @@ def follow(agent, target_list, follows_limit, statistic_frame_path, black_list_p
                     else:
                         print(target_follower_name, ' too old post = ', dif)
                         black_list_frame = pd.DataFrame([[target_follower_name]])
-                        black_list_frame.to_csv(black_list_path, encoding='utf-8', mode='a', index=False, header=False)
                         continue
                 else:
                     print('no media')
                     black_list_frame = pd.DataFrame([[target_follower_name]])
-                    black_list_frame.to_csv(black_list_path, encoding='utf-8', mode='a', index=False, header=False)
                     continue
             else:
                 print(' Private account')
 
-            # unfollow
-            print('try to unfollow')
+
+
+            follow
+            print('try to follow')
             time.sleep(int(TIMER))
-            unfol = None
+            fol = None
             start_time_follow = time.time()
-            unfollow_account = Account(followed_list[0])
-            while unfol is None:
+            while fol is None:
                 try:
-                    unfol = agent.unfollow(unfollow_account)
-                    followed_list.remove(followed_list[0])
+                    fol = agent.follow(target_account)
+                    print('pass folow')
                 except:
                     for s in trange(10):
                         time.sleep(1)
                     current_time_follow = time.time()
                     time_dif = current_time_follow - start_time_follow
                     if time_dif > 120:
-                        unfol = 17
+                        fol = 17
                     else:
                         continue
-            if unfol == 17:
+            if fol == 17:
                 continue
-
-            # follow
-            # print('try to follow')
-            # time.sleep(int(TIMER))
-            # fol = None
-            # start_time_follow = time.time()
-            # while fol is None:
-            #     try:
-            #         fol = agent.follow(target_account)
-            #         print('pass folow')
-            #     except:
-            #         for s in trange(10):
-            #             time.sleep(1)
-            #         current_time_follow = time.time()
-            #         time_dif = current_time_follow - start_time_follow
-            #         if time_dif > 120:
-            #             fol = 17
-            #         else:
-            #             continue
-            # if fol == 17:
-            #     continue
 
             # targets_frame = pd.DataFrame(
             #     [[target_follower_name, user_id, count_followers, count_follow, count_post, dif]])
@@ -179,22 +157,10 @@ def follow(agent, target_list, follows_limit, statistic_frame_path, black_list_p
             print(target_follower_name, '                                       ', CRED + str(j) + CEND)
 
             # write follow name to file
-            followed_list.append(target_follower_name)
             j += 1
 
     except KeyboardInterrupt:
         print('Saving already followed users')
-        mode = 'w'
-        for followed in followed_list:
-            followed_frame = pd.DataFrame([[followed]])
-            followed_frame.to_csv(followed_list_path, encoding='utf-8', mode=mode, index=False, header=False)
-            mode = 'a'
-
-    mode = 'w'
-    for followed in followed_list:
-        followed_frame = pd.DataFrame([[followed]])
-        followed_frame.to_csv(followed_list_path, encoding='utf-8', mode=mode, index=False, header=False)
-        mode = 'a'
 
 
 def get_target_list(target_list_path, black_list_path, followed_list_path):
@@ -255,32 +221,26 @@ def targets_filter(statistic_frame, target_list, model):
     return target_list
 
 
+def target_filter(X):
+    p = -0.19 * np.log10(X[['followers']].values + EPS) + 0.42 * np.log10(X[['follows']].values + EPS) - 0.18 * np.log10(X[['posts']].values + EPS)
+
+    ind = (p[:, 0] > 0.4) * (X[['posts']].values[:, 0] > 2)
+    return list(X['name'][ind])
+
+
 def main():
     follows_limit = 500
-    target_account_nick_name = 'kosmetichka_com.ua'
     data_base_path = config.data_base_path
     user_name, pass_word, cookies = config.username, config.password, config.cookies
-    statistic_frame_path = os.path.abspath(os.path.join(data_base_path, user_name, 'target_account_nick_name'))
-    statistic_frame_path = None
-    target_list_path = os.path.abspath(os.path.join(data_base_path, user_name, target_account_nick_name))
-    black_list_path = os.path.abspath(os.path.join(data_base_path, user_name, 'black_list'))
-    followed_list_path = os.path.abspath(os.path.join(data_base_path, user_name, user_name + '_follows'))
+    path = os.path.join(data_base_path, 'p.i.n.k.m.a.n/g.r.u.p.p.i.r.o.v.k.a.2.0_active_filtered_stats')
+    dataframe = pd.read_csv(path)
 
-    if statistic_frame_path is None:
-        target_list, followed_list = get_target_list(target_list_path, black_list_path, followed_list_path)
-    else:
-        stat_frame, target_list, followed_list = get_target_frame(statistic_frame_path, black_list_path, followed_list_path)
-
-        model_path = None
-        model = None
-        if model_path is not None:
-            model = load_model(model_path)
-        target_list = targets_filter(stat_frame, target_list, model)
+    target_list = target_filter(dataframe)
 
     agent = WebAgentAccount(user_name, cookies=cookies)
     if cookies is None:
         agent.auth(config.password)
-    follow(agent, target_list, follows_limit, statistic_frame_path, black_list_path, followed_list_path, followed_list)
+    follow(agent, target_list, follows_limit)
 
 
 if __name__ == "__main__":

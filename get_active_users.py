@@ -5,6 +5,7 @@ import requests
 
 from instagram import WebAgentAccount, Account
 import pandas as pd
+import urllib.request
 
 
 import config
@@ -18,8 +19,11 @@ def login(account):
     agent = WebAgentAccount(user_name, cookies=cookies)
     if cookies is None:
         agent.auth(pass_word)
-        account['cookies'] = agent.session.cookies.get_dict()['sessionid']
+        account['cookies'] = {'sessionid': agent.session.cookies.get_dict()['sessionid']}
     return agent
+
+
+cookies = {'sessionid': '13503104221%3AuUZzuZP5IwO5mc%3A3'}
 
 
 def ping_proxies(accounts):
@@ -27,20 +31,20 @@ def ping_proxies(accounts):
     for account in accounts:
         proxy = account['settings']['proxies']
         try:
-            _ = requests.get(url='http://www.instagram.com/', timeout=5, proxies=proxy)
+            _ = requests.get(url='http://www.instagram.com', timeout=5, proxies=proxy, cookies=requests.cookies.cookiejar_from_dict(cookies))
             status.append(True)
         except requests.ConnectionError:
             print("proxy " + str(proxy) + ' have no connection')
             status.append(False)
     if all(status):
         return True
-    else:
-        exit(0)
+    # else:
+    #     exit(0)
 
 
 def main():
     count = 12
-    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a.2.0'
+    target_account_nick_name = 'g.r.u.p.p.i.r.o.v.k.a'
     accounts_origin = config.accounts
     accounts = iter(accounts_origin)
     ping_proxies(accounts_origin)

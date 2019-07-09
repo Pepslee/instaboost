@@ -1,8 +1,4 @@
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 import os
 
 import config
